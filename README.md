@@ -40,6 +40,12 @@ python3.13 -m venv .venv
 - Asset returns are drawn from **correlated lognormals** calibrated to the
   arithmetic mean and volatility in `assets.py`, so a single year can lose value
   but never more than 100%.
+- A **crisis regime** (sidebar toggle, on by default) scales every asset's shock
+  by 2x in 12% of years, drawn once per year and shared across assets. This
+  fattens the tails (US stocks: excess kurtosis 0.4 -> 3.6, worst year -56% ->
+  -71%) and makes assets crash *together* — the chance bonds are in their worst
+  1% given stocks are rises from 5.5% to 15.2%. Mean and volatility stay exactly
+  on target; `_lognormal_parameters` bisects for the sigma that reproduces them.
 - All figures are **real** (inflation-adjusted), so today's dollars throughout.
 - A path that hits zero stays at zero — no borrowing.
 
