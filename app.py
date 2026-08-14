@@ -19,7 +19,6 @@ BAND_OUTER = "rgba(124, 92, 245, 0.55)"  # 10th-90th percentile
 BAND_INNER = "rgba(92, 63, 208, 0.60)"  # 25th-75th percentile
 MEDIAN_LINE = "#3d2b8f"
 PATH_LINE = "rgba(61, 43, 143, 0.14)"  # individual paths, stacked to show density
-PATH_LINE_LEGEND = "rgba(61, 43, 143, 0.55)"  # same hue, readable in the legend
 SURFACE = "#fdfaf3"
 GRIDLINE = "#ece3d2"
 AXIS = "#d2c7ae"
@@ -35,6 +34,18 @@ SEED = 42
 
 st.set_page_config(page_title="Monte Carlo Simulation", layout="wide")
 
+# Streamlit's default main-container padding (96px top, 160px bottom) is sized
+# for a scrolling web page; in a fixed desktop window it just pushes the app
+# below the fold. The header stays as-is -- it holds the sidebar expand button.
+st.markdown(
+    """
+    <style>
+    .stMainBlockContainer { padding-top: 2.5rem; padding-bottom: 3rem; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 if not os.environ.get("MONTE_CARLO_DESKTOP"):
     st.error("This app runs in its own window. Start it with:  python run.py")
     st.stop()
@@ -42,6 +53,11 @@ if not os.environ.get("MONTE_CARLO_DESKTOP"):
 
 def money(value: float) -> str:
     return f"${value:,.0f}"
+
+
+def money_md(value: float) -> str:
+    """``money`` for markdown contexts: a pair of bare $ renders as LaTeX math."""
+    return money(value).replace("$", r"\$")
 
 
 def axis_tick_format(value: float) -> str:
@@ -80,13 +96,22 @@ with top_left:
     net_worth = st.number_input(
         "Net worth", min_value=0, value=2_000_000, step=50_000, format="%d"
     )
-    st.caption(money(net_worth))
+    st.caption(money_md(net_worth))
 with top_right:
     annual_spending = st.number_input(
         "Annual spending", min_value=0, value=80_000, step=5_000, format="%d"
     )
     withdrawal_rate = annual_spending / net_worth if net_worth else 0.0
-    st.caption(f"{money(annual_spending)} — {withdrawal_rate:.1%} withdrawal rate")
+    spending_caption = (
+        f"{money_md(annual_spending)} — {withdrawal_rate:.1%} withdrawal rate"
+    )
+    if not real_dollars:
+        # Spending holds its purchasing power, so in future dollars it climbs
+        # with inflation -- quoting only the year-0 figure next to inflated
+        # balances would understate what the plan actually has to fund.
+        final_spending = annual_spending * (1.0 + INFLATION) ** years
+        spending_caption += f" — {money_md(final_spending)} by year {years}"
+    st.caption(spending_caption)
 
 st.divider()
 
@@ -214,17 +239,6 @@ with chart_col:
             connectgaps=False,
             hoverinfo="skip",
             showlegend=False,
-        )
-    )
-    # Legend proxy: the real paths are too faint to read as a swatch.
-    fig.add_trace(
-        go.Scatter(
-            x=[None],
-            y=[None],
-            mode="lines",
-            line=dict(color=PATH_LINE_LEGEND, width=1),
-            name=f"{N_VISIBLE_PATHS} individual paths",
-            hoverinfo="skip",
         )
     )
 
