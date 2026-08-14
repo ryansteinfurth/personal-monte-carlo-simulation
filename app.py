@@ -10,17 +10,19 @@ import streamlit as st
 
 from montecarlo import ASSET_CLASSES, DEFAULT_ALLOCATION, run_simulation
 
-# Validated single-hue blue ramp (see dataviz palette, light surface #fcfcfb).
-# Band fills are translucent so the individual paths stay legible through them.
-BAND_OUTER = "rgba(134, 182, 239, 0.50)"  # 10th-90th percentile
-BAND_INNER = "rgba(57, 135, 229, 0.45)"  # 25th-75th percentile
-MEDIAN_LINE = "#184f95"
-PATH_LINE = "rgba(24, 79, 149, 0.13)"  # individual paths, stacked to show density
-PATH_LINE_LEGEND = "rgba(24, 79, 149, 0.55)"  # same hue, readable in the legend
-SURFACE = "#fcfcfb"
-GRIDLINE = "#e1e0d9"
-AXIS = "#c3c2b7"
-MUTED_INK = "#898781"
+# Single-hue violet ramp on a warm cream surface. The fills are translucent so
+# the individual paths show through, so the ramp was validated on the COMPOSITED
+# colours (#b6a3f4 / #8067de / #3d2b8f over #fdfaf3) rather than these raw hexes:
+# monotone lightness, visible step gaps, light end at 2.11:1 against the surface.
+BAND_OUTER = "rgba(124, 92, 245, 0.55)"  # 10th-90th percentile
+BAND_INNER = "rgba(92, 63, 208, 0.60)"  # 25th-75th percentile
+MEDIAN_LINE = "#3d2b8f"
+PATH_LINE = "rgba(61, 43, 143, 0.14)"  # individual paths, stacked to show density
+PATH_LINE_LEGEND = "rgba(61, 43, 143, 0.55)"  # same hue, readable in the legend
+SURFACE = "#fdfaf3"
+GRIDLINE = "#ece3d2"
+AXIS = "#d2c7ae"
+MUTED_INK = "#8a8277"
 PRIMARY_INK = "#0b0b0b"
 
 N_VISIBLE_PATHS = 100  # individual simulations drawn through the summary bands
