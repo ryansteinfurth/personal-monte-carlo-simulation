@@ -27,6 +27,11 @@ PRIMARY_INK = "#0b0b0b"
 
 N_VISIBLE_PATHS = 100  # individual simulations drawn through the summary bands
 
+# Fixed so the same inputs always give the same answer -- nudging an unrelated
+# slider shouldn't make the headline number twitch. The sampling error this
+# leaves behind is reported under the success rate instead.
+SEED = 42
+
 st.set_page_config(page_title="Monte Carlo Simulation", layout="wide")
 
 if not os.environ.get("MONTE_CARLO_DESKTOP"):
@@ -50,7 +55,6 @@ with st.sidebar:
     n_sims = st.select_slider(
         "Number of simulations", options=[1_000, 5_000, 10_000, 25_000], value=10_000
     )
-    seed = st.number_input("Random seed", value=42, step=1)
     st.caption(
         "Returns are real (inflation-adjusted). Portfolio rebalances annually. "
         "12% of years are crisis years: every asset takes double-volatility "
@@ -113,7 +117,7 @@ with chart_col:
         allocation=allocation,
         years=years,
         n_sims=int(n_sims),
-        seed=int(seed),
+        seed=SEED,
     )
     bands = result.percentile_bands()
     x = list(range(years + 1))
@@ -123,6 +127,14 @@ with chart_col:
         "Percent chance of success",
         f"{result.success_rate:.0%}",
         help="Share of paths that never ran out",
+    )
+    # Each path either survives or doesn't, so the sampling error on that share
+    # is the binomial one. Two standard errors ~ the 95% interval.
+    p_hat = result.success_rate
+    margin = 2.0 * (p_hat * (1.0 - p_hat) / result.n_sims) ** 0.5
+    stat_a.caption(
+        f"±{margin * 100:.1f} pts from random sampling — "
+        "raise the simulation count to narrow it"
     )
     stat_b.metric("Median ending", money(result.median_ending))
     stat_c.metric("Downside (10th pct)", money(bands[10][-1]))
