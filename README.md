@@ -48,11 +48,32 @@ end of the horizon. The chart draws 100 individual paths behind the percentile
 bands; the y-axis is framed on the bands, so a few very lucky paths run off the
 top rather than flattening everything else.
 
-## Tuning the assumptions
+## Where the assumptions come from
 
-Everything lives in `montecarlo/assets.py` — the five asset classes, their
-expected real returns and volatilities, and the correlation matrix between them.
-Edit that file and the app picks it up on the next run.
+`montecarlo/assets.py` holds the five asset classes and is sourced from the
+**J.P. Morgan Long-Term Capital Market Assumptions, 2026 edition** (USD matrix,
+data as of 30 Sep 2025). Each asset records the LTCMA line item it maps to:
+
+| Asset class | LTCMA row | Nominal compound | Volatility | Real arithmetic |
+|---|---|---|---|---|
+| US Stocks | U.S. Large Cap | 6.70% | 16.47% | 5.45% |
+| International Stocks | EAFE Equity | 7.50% | 17.63% | 6.43% |
+| Bonds | U.S. Aggregate Bonds | 4.80% | 4.76% | 2.36% |
+| Real Estate | U.S. Core Real Estate | 8.20% | 11.39% | 6.21% |
+| Cash | U.S. Cash | 3.10% | 0.67% | 0.59% |
+
+The published figures are stored verbatim so they can be checked against the
+sheet. Two conversions happen in code, because LTCMA quotes something different
+from what the engine needs:
+
+- **Nominal → real**, deflating by the LTCMA U.S. inflation assumption (2.50%).
+- **Compound → arithmetic**, adding σ²/2. This is worth 1.4pp for US Large Cap,
+  so it is not a rounding detail.
+
+Correlations come from the same matrix. Volatilities are used as published.
+
+To update to a later edition, replace the compound return / volatility pairs and
+the correlations; the conversions take care of themselves.
 
 The correlation matrix must stay positive semi-definite. To check after editing:
 
