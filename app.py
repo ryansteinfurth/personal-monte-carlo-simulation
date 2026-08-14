@@ -9,14 +9,19 @@ import streamlit as st
 from montecarlo import ASSET_CLASSES, DEFAULT_ALLOCATION, run_simulation
 
 # Validated single-hue blue ramp (see dataviz palette, light surface #fcfcfb).
-BAND_OUTER = "#86b6ef"  # 10th-90th percentile
-BAND_INNER = "#3987e5"  # 25th-75th percentile
+# Band fills are translucent so the individual paths stay legible through them.
+BAND_OUTER = "rgba(134, 182, 239, 0.50)"  # 10th-90th percentile
+BAND_INNER = "rgba(57, 135, 229, 0.45)"  # 25th-75th percentile
 MEDIAN_LINE = "#184f95"
+PATH_LINE = "rgba(24, 79, 149, 0.13)"  # individual paths, stacked to show density
+PATH_LINE_LEGEND = "rgba(24, 79, 149, 0.55)"  # same hue, readable in the legend
 SURFACE = "#fcfcfb"
 GRIDLINE = "#e1e0d9"
 AXIS = "#c3c2b7"
 MUTED_INK = "#898781"
 PRIMARY_INK = "#0b0b0b"
+
+N_VISIBLE_PATHS = 100  # individual simulations drawn through the summary bands
 
 st.set_page_config(page_title="Monte Carlo Simulation", layout="wide")
 
@@ -102,7 +107,11 @@ with chart_col:
     x = list(range(years + 1))
 
     stat_a, stat_b, stat_c = st.columns(3)
-    stat_a.metric("Money lasts", f"{result.success_rate:.0%}", help="Share of paths that never ran out")
+    stat_a.metric(
+        "Percent chance of success",
+        f"{result.success_rate:.0%}",
+        help="Share of paths that never ran out",
+    )
     stat_b.metric("Median ending", money(result.median_ending))
     stat_c.metric("Downside (10th pct)", money(bands[10][-1]))
 
@@ -140,6 +149,37 @@ with chart_col:
             fill="tonexty",
             fillcolor=BAND_INNER,
             name="25th–75th percentile",
+            hoverinfo="skip",
+        )
+    )
+
+    # A sample of individual paths. One trace with None between paths keeps the
+    # figure light; spline smoothing takes the edge off the annual steps.
+    path_x: list[float | None] = []
+    path_y: list[float | None] = []
+    for path in result.sample_paths(N_VISIBLE_PATHS):
+        path_x.extend([*x, None])
+        path_y.extend([*path.tolist(), None])
+
+    fig.add_trace(
+        go.Scatter(
+            x=path_x,
+            y=path_y,
+            mode="lines",
+            line=dict(color=PATH_LINE, width=1, shape="spline", smoothing=0.8),
+            connectgaps=False,
+            hoverinfo="skip",
+            showlegend=False,
+        )
+    )
+    # Legend proxy: the real paths are too faint to read as a swatch.
+    fig.add_trace(
+        go.Scatter(
+            x=[None],
+            y=[None],
+            mode="lines",
+            line=dict(color=PATH_LINE_LEGEND, width=1),
+            name=f"{N_VISIBLE_PATHS} individual paths",
             hoverinfo="skip",
         )
     )
@@ -189,6 +229,9 @@ with chart_col:
         showline=False,
         tickvals=tick_values,
         ticktext=[axis_tick_format(v) for v in tick_values],
+        # Anchored to the percentile bands: a handful of lucky paths run off the
+        # top rather than compressing everything else into the floor.
+        range=[0, tick_values[-1]],
     )
 
     st.plotly_chart(fig, width="stretch")

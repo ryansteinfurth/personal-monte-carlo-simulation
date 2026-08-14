@@ -34,6 +34,17 @@ class SimulationResult:
         """Percentile of balance across paths, at each year."""
         return {p: np.percentile(self.balances, p, axis=0) for p in PERCENTILES}
 
+    def sample_paths(self, n: int = 100) -> np.ndarray:
+        """``n`` individual paths, shape (n, years + 1), for plotting.
+
+        Paths are i.i.d., so evenly spaced indices are an unbiased sample and
+        keep the picture stable between reruns with the same seed.
+        """
+        if n >= self.n_sims:
+            return self.balances
+        index = np.linspace(0, self.n_sims - 1, n).round().astype(int)
+        return self.balances[index]
+
     def depletion_year(self, percentile: float = 50.0) -> int | None:
         """Year the given percentile of paths has run dry, or None."""
         band = np.percentile(self.balances, percentile, axis=0)

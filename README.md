@@ -1,15 +1,22 @@
 # Personal Monte Carlo Simulation
 
 A portfolio simulation that projects net worth forward under uncertainty, given a
-spending plan and an asset allocation. Runs as a local web app.
+spending plan and an asset allocation. Runs as a local desktop app.
 
 ## Running it
 
 ```bash
-.venv/bin/streamlit run app.py
+.venv/bin/python run.py
 ```
 
-This opens a browser window at http://localhost:8501.
+This opens the app in its own desktop window. No browser or terminal tab to keep
+track of — closing the window stops the server.
+
+To run it in a browser instead:
+
+```bash
+.venv/bin/streamlit run app.py
+```
 
 ## Setup from scratch
 
@@ -22,6 +29,7 @@ python3.13 -m venv .venv
 
 | File | Role |
 |---|---|
+| `run.py` | Desktop-window launcher (starts Streamlit, wraps it in a native window) |
 | `app.py` | Streamlit UI — inputs, layout, chart |
 | `montecarlo/assets.py` | Asset classes, return/volatility assumptions, correlation matrix |
 | `montecarlo/simulation.py` | The simulation engine (no UI dependencies) |
@@ -37,8 +45,10 @@ python3.13 -m venv .venv
 - All figures are **real** (inflation-adjusted), so today's dollars throughout.
 - A path that hits zero stays at zero — no borrowing.
 
-"Money lasts" is the share of paths that still had a balance at the end of the
-horizon.
+"Percent chance of success" is the share of paths that still had a balance at the
+end of the horizon. The chart draws 100 individual paths behind the percentile
+bands; the y-axis is framed on the bands, so a few very lucky paths run off the
+top rather than flattening everything else.
 
 ## Tuning the assumptions
 
