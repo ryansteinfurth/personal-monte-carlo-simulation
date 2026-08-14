@@ -46,7 +46,10 @@ python3.13 -m venv .venv
   -71%) and makes assets crash *together* — the chance bonds are in their worst
   1% given stocks are rises from 5.5% to 15.2%. Mean and volatility stay exactly
   on target; `_lognormal_parameters` bisects for the sigma that reproduces them.
-- All figures are **real** (inflation-adjusted), so today's dollars throughout.
+- The engine always runs in **real** terms. A sidebar toggle switches the
+  display to future dollars, inflating every figure by 2.5% a year. That is a
+  change of units only — the chance of success is identical either way, since
+  a path runs dry in the same year whatever you print it in.
 - A path that hits zero stays at zero — no borrowing.
 
 "Percent chance of success" is the share of paths that still had a balance at the

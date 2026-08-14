@@ -5,10 +5,11 @@ Not meant to be run directly — ``run.py`` starts this and wraps it in a window
 
 import os
 
+import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 
-from montecarlo import ASSET_CLASSES, DEFAULT_ALLOCATION, run_simulation
+from montecarlo import ASSET_CLASSES, DEFAULT_ALLOCATION, INFLATION, run_simulation
 
 # Single-hue violet ramp on a warm cream surface. The fills are translucent so
 # the individual paths show through, so the ramp was validated on the COMPOSITED
@@ -55,8 +56,18 @@ with st.sidebar:
     n_sims = st.select_slider(
         "Number of simulations", options=[1_000, 5_000, 10_000, 25_000], value=10_000
     )
+    real_dollars = st.toggle(
+        "Show in today's dollars",
+        value=True,
+        help=(
+            f"On: every figure is in today's money. Off: figures are inflated "
+            f"at {INFLATION:.1%} a year, so they look bigger but buy the same "
+            "amount. The chance of success is identical either way — this only "
+            "changes the units."
+        ),
+    )
     st.caption(
-        "Returns are real (inflation-adjusted). Portfolio rebalances annually. "
+        f"Inflation {INFLATION:.1%} a year. Portfolio rebalances annually. "
         "12% of years are crisis years: every asset takes double-volatility "
         "shocks together."
     )
@@ -119,7 +130,16 @@ with chart_col:
         n_sims=int(n_sims),
         seed=SEED,
     )
-    bands = result.percentile_bands()
+    # The simulation always runs in real terms; nominal is a change of units
+    # applied on the way out, which is why the success rate is unaffected.
+    inflator = (1.0 + INFLATION) ** np.arange(years + 1) if not real_dollars else 1.0
+    dollars_label = "today's dollars" if real_dollars else "future dollars"
+
+    bands = {p: v * inflator for p, v in result.percentile_bands().items()}
+    paths = result.sample_paths(N_VISIBLE_PATHS) * inflator
+    median_ending = result.median_ending * (
+        inflator[-1] if not real_dollars else 1.0
+    )
     x = list(range(years + 1))
 
     stat_a, stat_b, stat_c = st.columns(3)
@@ -136,7 +156,7 @@ with chart_col:
         f"±{margin * 100:.1f} pts from random sampling — "
         "raise the simulation count to narrow it"
     )
-    stat_b.metric("Median ending", money(result.median_ending))
+    stat_b.metric("Median ending", money(median_ending))
     stat_c.metric("Downside (10th pct)", money(bands[10][-1]))
 
     fig = go.Figure()
@@ -181,7 +201,7 @@ with chart_col:
     # figure light; spline smoothing takes the edge off the annual steps.
     path_x: list[float | None] = []
     path_y: list[float | None] = []
-    for path in result.sample_paths(N_VISIBLE_PATHS):
+    for path in paths:
         path_x.extend([*x, None])
         path_y.extend([*path.tolist(), None])
 
@@ -246,7 +266,7 @@ with chart_col:
         tickcolor=AXIS,
     )
     fig.update_yaxes(
-        title_text="Portfolio value (today's dollars)",
+        title_text=f"Portfolio value ({dollars_label})",
         gridcolor=GRIDLINE,
         zeroline=True,
         zerolinecolor=AXIS,
