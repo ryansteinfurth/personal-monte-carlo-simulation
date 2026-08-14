@@ -51,15 +51,11 @@ with st.sidebar:
         "Number of simulations", options=[1_000, 5_000, 10_000, 25_000], value=10_000
     )
     seed = st.number_input("Random seed", value=42, step=1)
-    fat_tails = st.toggle(
-        "Crisis regime",
-        value=True,
-        help=(
-            "Some years hit every asset at once with double volatility, so "
-            "crashes are deeper and assets fall together. Off = plain lognormal."
-        ),
+    st.caption(
+        "Returns are real (inflation-adjusted). Portfolio rebalances annually. "
+        "12% of years are crisis years: every asset takes double-volatility "
+        "shocks together."
     )
-    st.caption("Returns are real (inflation-adjusted). Portfolio rebalances annually.")
 
 st.title("Monte Carlo Simulation")
 
@@ -118,7 +114,6 @@ with chart_col:
         years=years,
         n_sims=int(n_sims),
         seed=int(seed),
-        fat_tails=fat_tails,
     )
     bands = result.percentile_bands()
     x = list(range(years + 1))
