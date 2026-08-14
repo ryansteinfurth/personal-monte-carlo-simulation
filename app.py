@@ -1,7 +1,9 @@
 """Streamlit front end for the Monte Carlo portfolio simulation.
 
-Run with:  streamlit run app.py
+Not meant to be run directly — ``run.py`` starts this and wraps it in a window.
 """
+
+import os
 
 import plotly.graph_objects as go
 import streamlit as st
@@ -24,6 +26,10 @@ PRIMARY_INK = "#0b0b0b"
 N_VISIBLE_PATHS = 100  # individual simulations drawn through the summary bands
 
 st.set_page_config(page_title="Monte Carlo Simulation", layout="wide")
+
+if not os.environ.get("MONTE_CARLO_DESKTOP"):
+    st.error("This app runs in its own window. Start it with:  python run.py")
+    st.stop()
 
 
 def money(value: float) -> str:

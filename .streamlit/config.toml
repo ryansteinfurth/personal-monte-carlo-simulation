@@ -10,5 +10,9 @@ font = "sans serif"
 # Hide the Streamlit hamburger/Deploy toolbar so it reads as an app window.
 toolbarMode = "minimal"
 
+[server]
+# run.py owns the window; Streamlit must never open a browser itself.
+headless = true
+
 [browser]
 gatherUsageStats = false

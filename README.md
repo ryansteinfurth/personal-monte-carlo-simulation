@@ -9,14 +9,12 @@ spending plan and an asset allocation. Runs as a local desktop app.
 .venv/bin/python run.py
 ```
 
-This opens the app in its own desktop window. No browser or terminal tab to keep
-track of — closing the window stops the server.
+This is the only way to start it. The app opens in its own desktop window;
+closing the window stops the server.
 
-To run it in a browser instead:
-
-```bash
-.venv/bin/streamlit run app.py
-```
+`app.py` is a Streamlit script, but it will not render on its own — it checks for
+an environment variable that only `run.py` sets, so `streamlit run app.py`
+refuses and tells you to use `run.py` instead.
 
 ## Setup from scratch
 
@@ -30,7 +28,7 @@ python3.13 -m venv .venv
 | File | Role |
 |---|---|
 | `run.py` | Desktop-window launcher (starts Streamlit, wraps it in a native window) |
-| `app.py` | Streamlit UI — inputs, layout, chart |
+| `app.py` | Streamlit UI — inputs, layout, chart (launched by `run.py`) |
 | `montecarlo/assets.py` | Asset classes, return/volatility assumptions, correlation matrix |
 | `montecarlo/simulation.py` | The simulation engine (no UI dependencies) |
 | `.streamlit/config.toml` | Theme |

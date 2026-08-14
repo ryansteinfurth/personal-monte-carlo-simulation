@@ -7,6 +7,7 @@ Run with:  .venv/bin/python run.py
 """
 
 import atexit
+import os
 import socket
 import subprocess
 import sys
@@ -28,6 +29,8 @@ def free_port() -> int:
 
 
 def start_server(port: int) -> subprocess.Popen:
+    # app.py refuses to render without this, so the browser path stays closed.
+    env = {**os.environ, "MONTE_CARLO_DESKTOP": "1"}
     return subprocess.Popen(
         [
             sys.executable,
@@ -42,6 +45,7 @@ def start_server(port: int) -> subprocess.Popen:
             "--server.headless",
             "true",
         ],
+        env=env,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
