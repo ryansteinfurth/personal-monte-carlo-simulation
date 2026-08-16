@@ -1,9 +1,9 @@
 [theme]
 base = "light"
-backgroundColor = "#f7f0e2"       # warm cream page plane
-secondaryBackgroundColor = "#fdfaf3"  # cards, sidebar, chart surface
+backgroundColor = "#f9f9f7"       # neutral page plane
+secondaryBackgroundColor = "#fcfcfb"  # cards, sidebar, chart surface
 textColor = "#0b0b0b"
-primaryColor = "#ec5f9b"          # pink accent for controls -- never used for data
+primaryColor = "#2a78d6"          # blue accent for controls -- matches the chart hue
 font = "sans serif"
 
 [client]

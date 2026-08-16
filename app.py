@@ -11,18 +11,22 @@ import streamlit as st
 
 from montecarlo import ASSET_CLASSES, DEFAULT_ALLOCATION, INFLATION, run_simulation
 
-# Single-hue violet ramp on a warm cream surface. The fills are translucent so
-# the individual paths show through, so the ramp was validated on the COMPOSITED
-# colours (#b6a3f4 / #8067de / #3d2b8f over #fdfaf3) rather than these raw hexes:
-# monotone lightness, visible step gaps, light end at 2.11:1 against the surface.
-BAND_OUTER = "rgba(124, 92, 245, 0.55)"  # 10th-90th percentile
-BAND_INNER = "rgba(92, 63, 208, 0.60)"  # 25th-75th percentile
-MEDIAN_LINE = "#3d2b8f"
-PATH_LINE = "rgba(61, 43, 143, 0.14)"  # individual paths, stacked to show density
-SURFACE = "#fdfaf3"
-GRIDLINE = "#ece3d2"
-AXIS = "#d2c7ae"
-MUTED_INK = "#8a8277"
+# Single-hue blue ramp on a neutral surface -- the conventional palette for a
+# financial projection. Nested percentile bands are a magnitude encoding, so they
+# take one hue stepped light->dark rather than separate hues.
+#
+# The fills are translucent, and the inner band paints over the outer one, so the
+# ramp was validated on the COMPOSITED colours (#89b3e7 / #578fd3 / #0d366b over
+# #fcfcfb) rather than these raw hexes: monotone lightness, adjacent step gaps
+# clear of 0.06, light end at 2.12:1 against the surface, hue spread 3 degrees.
+BAND_OUTER = "rgba(42, 120, 214, 0.55)"  # 10th-90th percentile
+BAND_INNER = "rgba(37, 106, 191, 0.50)"  # 25th-75th percentile, over the outer band
+MEDIAN_LINE = "#0d366b"
+PATH_LINE = "rgba(13, 54, 107, 0.14)"  # individual paths, stacked to show density
+SURFACE = "#fcfcfb"
+GRIDLINE = "#e1e0d9"
+AXIS = "#c3c2b7"
+MUTED_INK = "#898781"
 PRIMARY_INK = "#0b0b0b"
 
 N_VISIBLE_PATHS = 100  # individual simulations drawn through the summary bands
