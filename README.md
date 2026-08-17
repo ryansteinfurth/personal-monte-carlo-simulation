@@ -12,7 +12,7 @@ spending plan and an asset allocation. Runs as a local desktop app.
 This is the only way to start it. The app opens in its own desktop window;
 closing the window stops the server.
 
-`app.py` is a Streamlit script, but it will not render on its own — it checks for
+`app.py` is a Streamlit script, but it will not render on its own. It checks for
 an environment variable that only `run.py` sets, so `streamlit run app.py`
 refuses and tells you to use `run.py` instead.
 
@@ -28,7 +28,7 @@ python3.13 -m venv .venv
 | File | Role |
 |---|---|
 | `run.py` | Desktop-window launcher (starts Streamlit, wraps it in a native window) |
-| `app.py` | Streamlit UI — inputs, layout, chart (launched by `run.py`) |
+| `app.py` | Streamlit UI: inputs, layout, chart (launched by `run.py`) |
 | `montecarlo/assets.py` | Asset classes, return/volatility assumptions, correlation matrix |
 | `montecarlo/simulation.py` | The simulation engine (no UI dependencies) |
 | `.streamlit/config.toml` | Theme |
@@ -36,21 +36,21 @@ python3.13 -m venv .venv
 ## The model
 
 - Annual timesteps; the portfolio rebalances to the target weights each year.
-- Spending is withdrawn at the **start** of each year, then returns are applied.
-- Asset returns are drawn from **correlated lognormals** calibrated to the
+- Spending is withdrawn at the start of each year, then returns are applied.
+- Asset returns are drawn from correlated lognormals calibrated to the
   arithmetic mean and volatility in `assets.py`, so a single year can lose value
   but never more than 100%.
-- A **crisis regime** (always on) scales every asset's shock
-  by 2x in 12% of years, drawn once per year and shared across assets. This
-  fattens the tails (US stocks: excess kurtosis 0.4 -> 3.6, worst year -56% ->
-  -71%) and makes assets crash *together* — the chance bonds are in their worst
-  1% given stocks are rises from 5.5% to 15.2%. Mean and volatility stay exactly
-  on target; `_lognormal_parameters` bisects for the sigma that reproduces them.
-- The engine always runs in **real** terms. A sidebar toggle switches the
-  display to future dollars, inflating every figure by 2.5% a year. That is a
-  change of units only — the chance of success is identical either way, since
-  a path runs dry in the same year whatever you print it in.
-- A path that hits zero stays at zero — no borrowing.
+- A crisis regime (always on) scales every asset's shock by 2x in 12% of years,
+  drawn once per year and shared across assets. This fattens the tails (US
+  stocks: excess kurtosis 0.4 -> 3.6, worst year -56% -> -71%) and makes assets
+  crash together. The chance bonds are in their worst 1% given stocks are rises
+  from 5.5% to 15.2%. Mean and volatility stay exactly on target;
+  `_lognormal_parameters` bisects for the sigma that reproduces them.
+- The engine always runs in real terms. A sidebar toggle switches the display to
+  future dollars, inflating every figure by 2.5% a year. That is a change of
+  units only. The chance of success is identical either way, since a path runs
+  dry in the same year whatever you print it in.
+- A path that hits zero stays at zero. There is no borrowing.
 
 "Percent chance of success" is the share of paths that still had a balance at the
 end of the horizon. The chart draws 100 individual paths behind the percentile
@@ -60,7 +60,7 @@ top rather than flattening everything else.
 ## Where the assumptions come from
 
 `montecarlo/assets.py` holds the five asset classes and is sourced from the
-**J.P. Morgan Long-Term Capital Market Assumptions, 2026 edition** (USD matrix,
+J.P. Morgan Long-Term Capital Market Assumptions, 2026 edition (USD matrix,
 data as of 30 Sep 2025). Each asset records the LTCMA line item it maps to:
 
 | Asset class | LTCMA row | Nominal compound | Volatility | Real arithmetic |
@@ -75,14 +75,15 @@ The published figures are stored verbatim so they can be checked against the
 sheet. Two conversions happen in code, because LTCMA quotes something different
 from what the engine needs:
 
-- **Nominal → real**, deflating by the LTCMA U.S. inflation assumption (2.50%).
-- **Compound → arithmetic**, adding σ²/2. This is worth 1.4pp for US Large Cap,
-  so it is not a rounding detail.
+- Nominal to real, deflating by the LTCMA U.S. inflation assumption (2.50%).
+- Compound to arithmetic, adding sigma^2 / 2. This is worth 1.4pp for US Large
+  Cap, so it is not a rounding detail.
 
 Correlations come from the same matrix. Volatilities are used as published.
 
 To update to a later edition, replace the compound return / volatility pairs and
-the correlations; the conversions take care of themselves.
+the correlations. The conversions run off those numbers, so nothing else needs
+to change.
 
 The correlation matrix must stay positive semi-definite. To check after editing:
 
